@@ -3,33 +3,67 @@
 
   tasks:
 
+    - name: Install dependencies
+      shell: "yes | aptdcon--hide-terminal --install gdebi-core zlib1g-dev libclang-dev libssl-dev libffi-dev libcurl4-openssl-dev libapparmor1 libssl1.0.0 libxml2-dev libjpeg-dev libpng-dev libcairo2-dev libxt-dev bzip2"
+
     - name: Add the CRAN apt key
       apt_key:
         keyserver: keyserver.ubuntu.com
         id: E298A3A825C0D65DFD57CBB651716619E084DAB9
 
+    # R 3.6.3
+    - name: Install R 3.6.3
+      shell: "curl -O https://cdn.rstudio.com/r/ubuntu-1804/pkgs/r-3.6.3_1_amd64.deb && yes | gdebi r-3.6.3_1_amd64.deb"
+
+    - name: Add R-Project apt repository
+      shell: "aptdcon --add-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu {{ ansible_distribution_release }}-cran35/' && aptdcon --refresh"
+
+    # Install R packages for R 3.6.3
+    - name: Install devtools
+      shell: "/opt/R/3.6.3/bin/R -e \"install.packages('devtools', repos=('https://cran.rstudio.com/'))\""
+
+    - name: Install synapser
+      shell: "/opt/R/3.6.3/bin/R -e \"install.packages('synapser', repos=c('http://ran.synapse.org', 'https://cran.rstudio.com/'))\""
+
+    - name: Install tidyverse
+      shell: "/opt/R/3.6.3/bin/R -e \"install.packages('tidyverse')\""
+
+    - name: Install shiny
+      shell: "/opt/R/3.6.3/bin/R -e \"install.packages('shiny', repos='https://cran.rstudio.com/')\""
+
+    - name: Install BiocManager
+      shell: "/opt/R/3.6.3/bin/R -e \"install.packages('biocManager', repos='https://cran.rstudio.com/')\""
+
+    # R 4.0.0
+    - name: Install R 4.0
+      shell: "curl -O https://cdn.rstudio.com/r/ubuntu-1804/pkgs/r-4.0.0_1_amd64.deb && yes | gdebi r-4.0.0_1_amd64.deb"
+
     - name: Add R-Project apt repository
       shell: "aptdcon --add-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu {{ ansible_distribution_release }}-cran40/' && aptdcon --refresh"
 
-    - name: install packages
-      shell: "yes | aptdcon --hide-terminal --install 'zlib1g-dev libclang-dev libssl-dev libffi-dev libcurl4-openssl-dev libapparmor1 libssl1.0.0 r-base r-base-dev libxml2-dev'"
-
-    # Install R packages
+    # Install R packages for R 4.0.0
     - name: Install devtools
-      shell: "R -e \"install.packages('devtools')\""
+      shell: "/opt/R/4.0.0/bin/R -e \"install.packages('devtools', repos=('https://cran.rstudio.com/'))\""
 
     - name: Install synapser
-      shell: "R -e \"install.packages('synapser', repos=c('http://ran.synapse.org', 'http://cran.fhcrc.org'))\""
+      shell: "/opt/R/4.0.0/bin/R -e \"install.packages('synapser', repos=c('http://ran.synapse.org', 'https://cran.rstudio.com/'))\""
 
     - name: Install tidyverse
-      shell: "R -e \"install.packages('tidyverse')\""
+      shell: "/opt/R/4.0.0/bin/R -e \"install.packages('tidyverse')\""
 
     - name: Install shiny
-      shell: "R -e \"install.packages('shiny', repos='https://cran.rstudio.com/')\""
+      shell: "/opt/R/4.0.0/bin/R -e \"install.packages('shiny', repos='https://cran.rstudio.com/')\""
+
+    - name: Install BiocManager
+      shell: "/opt/R/4.0.0/bin/R -e \"install.packages('biocManager', repos='https://cran.rstudio.com/')\""
+
+    # Symlink R 4.0.0
+    - name: Symlink R 4.0.0
+      shell: "ln -s /opt/R/4.0.0/bin/R /usr/local/bin/R && ln -s /opt/R/4.0.0/bin/Rscript /usr/local/bin/Rscript"
 
     # Install Shiny server
     - name: Download Shiny Server
       get_url: url=https://download3.rstudio.org/ubuntu-14.04/x86_64/shiny-server-1.5.13.944-amd64.deb dest=/tmp/shiny.deb
 
     - name: Install Shiny Server
-      command: gdebi shiny-server-1.5.13.944-amd64.deb
+      shell: "yes | gdebi /tmp/shiny.deb"
